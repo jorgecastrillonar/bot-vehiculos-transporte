@@ -10,6 +10,7 @@ class TipoUsuario(db.Base):
     id = Column('id', String(15), primary_key=True, nullable=False)
     nombre = Column('nombre', String(50), server_default='0', nullable=False)
     descripcion = Column('descripcion', String(50), server_default='0', nullable=False)
+    
     usuario = relationship("Usuario", back_populates="tipo_usuario")
     
     def __init__(self, id, nombre, descripcion):
