@@ -3,9 +3,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 engine = create_engine (
- 'sqlite:///database/vehiculos_transporte.sqlite',
-  echo=True,
-  connect_args = {'check_same_thread': False})
+  'sqlite:///database/vehiculos_transporte.sqlite',
+    echo=True,
+    connect_args = {'check_same_thread': False})
 
 Base = declarative_base()
 
