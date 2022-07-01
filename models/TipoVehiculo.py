@@ -10,7 +10,7 @@ class TipoVehiculo(db.Base):
     descripcion = Column('descripcion', Text, nullable=False)
     
     
-    #vehiculos = relationship('Vehiculo', back_populates='tipo_vehiculo')
+    vehiculos = relationship('Vehiculo', back_populates='tipo_vehiculo')
     
     def __init__(self, nombre="", descripcion=""):
         self.nombre = nombre
