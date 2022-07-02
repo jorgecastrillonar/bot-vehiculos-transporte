@@ -12,13 +12,11 @@ import database.db as db
 from models.Vehiculo import Vehiculo
 from models.TipoVehiculo import TipoVehiculo
 from telebot import types
-
-
-vehiculo = Vehiculo()
 import ast
-from telebot import types
 from models.Usuario import Usuario
 from models.TipoUsuario import TipoUsuario
+
+vehiculo = Vehiculo()
 
 #user = Usuario()
 
@@ -40,27 +38,16 @@ def on_command_help(message):
 Contruir teclado en pantalla
 @return datos_listar Lista de elementos a mostrar
 '''
-def makeKeyboard(datos_listar):
+def makeKeyboard(datos_listar, tipo):
     markup = types.InlineKeyboardMarkup()
 
     for item in datos_listar:
-        markup.add(types.InlineKeyboardButton(text=item.nombre,callback_data=item.id))
+        markup.add(types.InlineKeyboardButton(text=item.nombre,callback_data="['"+ tipo +"', '" + str(item.id) + "']"))
 
     return markup
 
 #########################################################
-
-@bot.callback_query_handler(func=lambda call: True)
-def handle_query(call):
-    print(call.data)
-    vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,call.data)
-    
-    bot.reply_to(
-        call.message,
-        f"\U0001F4B0 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
-        else f"El vehículo ya se encuentra registrado.") 
-    
-#########################################################      
+ 
 
 """
 Recibe la petición para registrar un nuevo vehículo
@@ -124,7 +111,7 @@ def proceso_modelo(message):
     if modelo.isdigit():
         bot.send_message(message.chat.id,
                      "Selecciona el tipo de vehículo",
-                     reply_markup=makeKeyboard(lista_tipo_vehiculos),
+                     reply_markup=makeKeyboard(lista_tipo_vehiculos, 'vehiculo'),
                      parse_mode='HTML')
         
     else:
@@ -135,12 +122,6 @@ def proceso_modelo(message):
     
 ########################################################
 
-@bot.message_handler(func=lambda message: True)
-def on_fallback(message):
-    bot.send_chat_action(message.chat.id, 'typing')
-    sleep(1)
-
-    bot.reply_to(message, "no entiendo")
 
 """
 Encargado de recibir la petición de registrar un nuevo usuario.
@@ -229,13 +210,15 @@ def registro_tipo_usuario(message):
             datos = {'nombre_completo': message.text}
             logic.actualizar_datos_modelo(usuario, datos)
             
+            objectTipoUsuario = logic.obtener_tipo_usuario()
+            
             ##REFACTOR EXTRACT##
             bot.send_chat_action(message.chat.id, 'typing')
             sleep(1)        
             text = 'Selecciona el tipo de usuario'
             bot.send_message(message.chat.id,
                             text,
-                            reply_markup=makeKeyboard(),
+                            reply_markup=makeKeyboard(objectTipoUsuario,'usuario'),
                             parse_mode='HTML')
 ############################################################################################
 """
@@ -243,11 +226,13 @@ Metodo encargado de recibir la respuesta del teclado en pantalla y procesarla.
 """
 @bot.callback_query_handler(func=lambda message: message)
 def handle_query(message):
-    if (message.data.startswith("['value'")):
+    print(message.data)
+    if (message.data.startswith("['usuario'")):
         print(f"message.data : {message.data} , type : {type(message.data)}")
-        print(f"ast.literal_eval(message.data) : {ast.literal_eval(message.data)} , type : {type(ast.literal_eval(message.data))}")
+
+        #print(f"ast.literal_eval(message.data) : {ast.literal_eval(message.data)} , type : {type(ast.literal_eval(message.data))}")
         globales = globals()
-        keyFromCallBack = ast.literal_eval(message.data)[2]
+        keyFromCallBack = ast.literal_eval(message.data)[1]
         usuario = logic.obtener_usuario_documento(globales['prueba']['documento'])
         datos = {'tipo_usuario_id': keyFromCallBack}
         logic.actualizar_datos_modelo(usuario, datos)
@@ -259,21 +244,15 @@ def handle_query(message):
             text,
             parse_mode='Markdown'
         )
+    else:
+        id_tipo_vehiculo = ast.literal_eval(message.data)[1]
+        vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,id_tipo_vehiculo)
+    
+        bot.reply_to(
+            message.message,
+            f"\U0001F4B0 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
+            else f"El vehículo ya se encuentra registrado.") 
 ###########################################################################################
-""" 
-Metodo que permite generar el teclado en pantalla para la seleccion de tipo_usuario 
-@return markup Respuestaa con el teclado creado.
-"""
-def makeKeyboard():
-    markup = types.InlineKeyboardMarkup()
-    objectTipoUsuario = logic.obtener_tipo_usuario()
-    for t in objectTipoUsuario:
-        markup.add(types
-        .InlineKeyboardButton(text=t.nombre,
-        callback_data="['value', '" + t.nombre + "', '" + str(t.id) + "']"))    
-    return markup
-
-#########################################################
 
 @bot.message_handler(regexp=r"^(Asignar mecánico|Asignar mecanico|am) ([0-9]+) a ([A-Za-z0-9]+)$")
 def on_asignar_mecanico(message):

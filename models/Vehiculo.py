@@ -15,8 +15,7 @@ class Vehiculo(db.Base):
 
     tipo_vehiculo = relationship('TipoVehiculo', back_populates='vehiculos')
     
-    def __init__(self, id = 0, placa="", marca = "", modelo = 0, tipo_vehiculo = 1, duenio = None, mecanico = None):
-        self.id = id
+    def __init__(self, placa="", marca = "", modelo = 0, tipo_vehiculo = 1, duenio = None, mecanico = None):
         self.placa = placa
         self.marca = marca
         self.modelo = modelo
