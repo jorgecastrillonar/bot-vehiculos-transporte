@@ -28,16 +28,7 @@ def registrar_vehiculo(placa, marca="",modelo=0, tipo_vehiculo_id=1):
         return vehiculo
     else:
         return None
-    
-    """ if len(placa) != 6:
-        print("Debe tener 6 caracteres") """
-        
-    """ if not modelo.isdigit():
-        print("El modelo debe ser un valor numerico") """
-        
-    """ if not placa.isalnum():
-        print("La placa solo debe contener valores alfanumericos") """    
-            
+
 #########################################################
 
 def registrar_revision(revision):

@@ -308,9 +308,10 @@ Metodo encargado de recibir la respuesta del teclado en pantalla y procesarla.
 """
 @bot.callback_query_handler(func=lambda message: message)
 def handle_query(message):
+    dato_seleccionado = ast.literal_eval(message.data)[1]
     if (message.data.startswith("['usuario'")):
-        user.tipo_usuario_id = ast.literal_eval(message.data)[1]
-        usuario = logic.crear_nuevo_usuario(user.documento_identidad,user.nombre_completo,user.tipo_usuario_id)
+
+        usuario = logic.crear_nuevo_usuario(user.documento_identidad,user.nombre_completo, dato_seleccionado)
         
         bot.reply_to(
             message.message,
@@ -320,10 +321,9 @@ def handle_query(message):
             +' \r\nTipo de Usuario: '+str(usuario.tipo_usuario.nombre) if usuario is not None
             else f'El usuario ya se encuentra registrado.'
             +decorators.emojis_excepcion()+decorators.emojis_excepcion()) 
-    else:
         
-        id_tipo_vehiculo = ast.literal_eval(message.data)[1]
-        vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,id_tipo_vehiculo)
+    if (message.data.startswith("['vehiculo'")):
+        vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,dato_seleccionado)
         
         bot.reply_to(
             message.message,
@@ -331,14 +331,13 @@ def handle_query(message):
             else f"El vehículo ya se encuentra registrado.")
     
     if (message.data.startswith("['lista_vehiculos'")):
-        placa = ast.literal_eval(message.data)[1]
         nueva_revision = logic.registrar_revision(revision)
         
-        registrar_revision = logic.registrar_revision_vehiculo(nueva_revision.id,placa)
+        registrar_revision = logic.registrar_revision_vehiculo(nueva_revision.id,dato_seleccionado)
     
         bot.reply_to(
             message.message,
-            f"\U00002705 Se registró una revisión al vehículo con placas: {placa}" if registrar_revision is not None
+            f"\U00002705 Se registró una revisión al vehículo con placas: {dato_seleccionado}" if registrar_revision is not None
             else f"No fue posible registrar la revisión, intenta de nuevo.") 
      
 ###########################################################################################
