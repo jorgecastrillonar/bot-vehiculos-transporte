@@ -5,6 +5,7 @@ from sqlalchemy import extract
 from models.TipoVehiculo import TipoVehiculo
 import re
 from models.Vehiculo import Vehiculo
+from models.VehiculoRevision import VehiculoRevision
 
 #########################################################
 
@@ -39,6 +40,25 @@ def registrar_vehiculo(placa, marca="",modelo=0, tipo_vehiculo=1):
             
 #########################################################
 
+def registrar_revision(revision):
+    
+    db.session.add(revision)
+    db.session.commit()
+    return revision
+
+#########################################################
+
+def registrar_revision_vehiculo(revision_id, placa):
+    
+    vehiculo = obtener_vehiculo(placa)
+    
+    vehiculo_revision = VehiculoRevision(vehiculo.id,revision_id)
+    db.session.add(vehiculo_revision)
+    db.session.commit()
+    return vehiculo_revision
+
+#########################################################
+
 '''
 Obtiene los tipos de vehiculos registrados
 @return tipos_vehiculos Lista de los tipo de vehiculos
@@ -48,6 +68,19 @@ def listar_tipos_vehiculos():
     return tipos_vehiculos
 
 #########################################################
+
+#########################################################
+
+'''
+Obtiene los tipos de vehiculos registrados
+@return tipos_vehiculos Lista de los tipo de vehiculos
+'''
+def listar_vehiculos():
+    vehiculos = db.session.query(Vehiculo).all()
+    return vehiculos
+
+#########################################################
+
 
 '''
 Obtiene un vehiculo filtrado por la placa

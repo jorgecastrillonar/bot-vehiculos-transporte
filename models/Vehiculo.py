@@ -14,6 +14,8 @@ class Vehiculo(db.Base):
     mecanico_id = Column('mecanico_id', String(15), ForeignKey('tipo_usuario.id',onupdate='CASCADE', ondelete='CASCADE'), nullable=True)
 
     tipo_vehiculo = relationship('TipoVehiculo', back_populates='vehiculos')
+    revisiones_vehiculos = relationship('VehiculoRevision', back_populates='vehiculo')
+
     
     def __init__(self, placa="", marca = "", modelo = 0, tipo_vehiculo = 1, duenio = None, mecanico = None):
         self.placa = placa
