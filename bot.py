@@ -22,6 +22,10 @@ if __name__ == '__main__':
     
 #########################################################
 
+'''
+Contruir teclado en pantalla
+@return datos_listar Lista de elementos a mostrar
+'''
 def makeKeyboard(datos_listar):
     markup = types.InlineKeyboardMarkup()
 
@@ -40,10 +44,13 @@ def handle_query(call):
     bot.reply_to(
         call.message,
         f"\U0001F4B0 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
-        else f"El vehículo con placa {vehiculo.pĺaca} ya se encuentra registrado.") 
+        else f"El vehículo ya se encuentra registrado.") 
     
 #########################################################      
 
+"""
+Recibe la petición para registrar un nuevo vehículo
+"""
 @bot.message_handler(regexp=r"^(registrar vehículo|registrar vehiculo|rh)$")
 def commando_registrar_vehiculo(message):
     bot.send_chat_action(message.chat.id, 'typing')
@@ -63,7 +70,7 @@ def proceso_placa(message):
 
     
     if len(placa) == 6 and re.match(r'^[A-Z|a-z]{3}[0-9]{3}$', placa):
-        response = bot.reply_to(message, '¿Cuál es la marca del vehículo')
+        response = bot.reply_to(message, '¿Cuál es la marca del vehículo?')
         bot.register_next_step_handler(response, proceso_marca)
     else:
         response = bot.reply_to(message, "La placa debe tener 6 caracteres y debe ser un dato alfanumerico, ¿Cuál es la placa del vehículo?")
