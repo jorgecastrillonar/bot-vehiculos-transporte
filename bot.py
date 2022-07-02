@@ -262,6 +262,25 @@ def listar_niveles():
 
 #########################################################
 
+@bot.message_handler(regexp=r"^(Asignar dueño|asignar dueño|ad) ([0-9]+) a ([A-Za-z0-9]+)$")
+def on_asignar_duenio(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    parts = re.match(
+        r"^(Asignar dueño|asignar dueño|ad) ([0-9]+) a ([A-Za-z0-9]+)$",
+        message.text,
+        flags=re.IGNORECASE)
+    
+    documento_identidad_usuario = int(parts[2])
+    placa_vehiculo = parts[3]
+    
+    text = logic.asignar_duenio (documento_identidad_usuario, placa_vehiculo)
+    
+    bot.reply_to(message, text, parse_mode="Markdown")
+    
+    
+###########################################################################################
+
 @bot.message_handler(func=lambda message: True)
 def on_fallback(message):
     bot.send_chat_action(message.chat.id, 'typing')

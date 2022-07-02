@@ -16,12 +16,12 @@ Almacenar un vehículo en la base de datos
 @param Integer tipo de vehículo a registrar
 @return Vehiculo | None Objeto de tipo Vehiculo registrado o None si no es posible regoistrarlo
 '''
-def registrar_vehiculo(placa, marca="",modelo=0, tipo_vehiculo=1):
+def registrar_vehiculo(placa, marca="",modelo=0, tipo_vehiculo_id=1):
     
     vehiculo = obtener_vehiculo(placa)
     
     if vehiculo is None:
-        vehiculo = Vehiculo(placa,marca,modelo,tipo_vehiculo)
+        vehiculo = Vehiculo(placa,marca,modelo,tipo_vehiculo_id)
         db.session.add(vehiculo)
         db.session.commit()
         return vehiculo
@@ -118,17 +118,9 @@ def obtener_tipo_usuario():
 
 def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):
     
-    vehiculo = db.session.query(
-        Vehiculo
-    ).filter_by(
-        placa = placa_vehiculo
-    ).one_or_none()
+    vehiculo = obtener_vehiculo(placa_vehiculo)
     
-    usuario = db.session.query(
-        Usuario
-    ).filter_by(
-        documento_identidad = documento_identidad_usuario
-    ).one_or_none()
+    usuario = obtener_usuario_documento(documento_identidad_usuario)
     
     db.session.commit()
     
@@ -148,3 +140,28 @@ def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):
     db.session.commit()        
         
     return 'Mecánico asignado correctamente'
+
+def asignar_duenio (documento_identidad_usuario, placa_vehiculo):
+    
+    vehiculo = obtener_vehiculo(placa_vehiculo)
+    
+    usuario = obtener_usuario_documento(documento_identidad_usuario)
+    
+    db.session.commit()
+    
+    if not vehiculo:
+        return 'Error al asignar dueño'
+    
+    if not usuario:
+        return 'Error al asignar dueño'
+    
+    if usuario.tipo_usuario_id != '2':
+        return 'Error al asignar dueño'
+    
+    if vehiculo.duenio_id != None and vehiculo.duenio_id != usuario.id:
+        return 'El vehículo ya tiene un dueño asignado previamente'
+    
+    vehiculo.duenio_id = usuario.id
+    db.session.commit()        
+        
+    return 'Dueño asignado correctamente'
