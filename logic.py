@@ -66,10 +66,15 @@ from models.Usuario import Usuario
 Metodo que inicia con el registro de un usuario nuevo
 @param string documento documento de identidad del usuario
 '''
-def crear_nuevo_usuario(documento):
-    usuario = Usuario(documento_identidad=documento, nombre_completo='', tipo_usuario_id='')
-    db.session.add(usuario)
-    db.session.commit()
+def crear_nuevo_usuario(documento_identidad, nombre_completo="",tipo_usuario_id=1):
+    usuario = obtener_usuario_documento(documento_identidad)
+    if usuario is None:
+        usuario = Usuario(documento_identidad, nombre_completo, tipo_usuario_id)
+        db.session.add(usuario)
+        db.session.commit()
+        return usuario
+    else:
+        return None
 #############################################################################################################
 '''
 Metodo que actualiza un registro en la base de datos 
