@@ -143,13 +143,7 @@ def asignar_duenio (documento_identidad_usuario, placa_vehiculo):
     
     db.session.commit()
     
-    if not vehiculo:
-        return 'Error al asignar dueño'
-    
-    if not usuario:
-        return 'Error al asignar dueño'
-    
-    if usuario.tipo_usuario_id != '2':
+    if not es_valida_asignacion(vehiculo, usuario, '2'):
         return 'Error al asignar dueño'
     
     if vehiculo.duenio_id != None and vehiculo.duenio_id != usuario.id:
