@@ -124,13 +124,7 @@ def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):
     
     db.session.commit()
     
-    if not vehiculo:
-        return 'Error al asignar mecánico'
-    
-    if not usuario:
-        return 'Error al asignar mecánico'
-    
-    if usuario.tipo_usuario_id != '1':
+    if not es_valida_asignacion(vehiculo, usuario, '1'):
         return 'Error al asignar mecánico'
     
     if vehiculo.mecanico_id != None and vehiculo.mecanico_id != usuario.id:
@@ -165,3 +159,9 @@ def asignar_duenio (documento_identidad_usuario, placa_vehiculo):
     db.session.commit()        
         
     return 'Dueño asignado correctamente'
+
+def es_valida_asignacion(vehiculo, usuario, tipo_usuario_id):
+    if not vehiculo or not usuario or usuario.tipo_usuario_id != tipo_usuario_id:
+        return False
+    
+    return True
