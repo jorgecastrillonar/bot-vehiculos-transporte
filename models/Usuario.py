@@ -31,5 +31,5 @@ class Usuario(db.Base):
     def eliminar(self):
        db.Base.metadata.create_all(db.engine)
        session = db.Session()
-       session.query(Usuario).filter(Usuario.id==self.id).delete()
+       session.query(Usuario).filter(Usuario.documento_identidad==self.documento_identidad).delete()
        session.commit()    

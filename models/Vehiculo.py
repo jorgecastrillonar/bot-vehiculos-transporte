@@ -36,5 +36,5 @@ class Vehiculo(db.Base):
     def eliminar(self):
        db.Base.metadata.create_all(db.engine)
        session = db.Session()
-       session.query(Vehiculo).filter(Vehiculo.id==self.id).delete()
+       session.query(Vehiculo).filter(Vehiculo.placa==self.placa).delete()
        session.commit()

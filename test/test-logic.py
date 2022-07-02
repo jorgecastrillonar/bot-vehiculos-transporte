@@ -9,10 +9,10 @@ from models.Vehiculo import Vehiculo
 class TestLogic(unittest.TestCase):
     
     def setUp(self):
-        self.usuario_mecanico = Usuario(id = 1000, documento_identidad=11111, nombre_completo='nom1', tipo_usuario = '1')
-        self.usuario_duenio = Usuario(id = 1001, documento_identidad=22222, nombre_completo='nom2', tipo_usuario = '2')
-        self.usuario_mecanico2 = Usuario(id = 1002, documento_identidad=33333, nombre_completo='nom3', tipo_usuario = '1')
-        self.vehiculo = Vehiculo(id = 1000, placa='qaz123', marca = 'renault', modelo = 2020, tipo_vehiculo = '1', duenio = None, mecanico = None)
+        self.usuario_mecanico = Usuario(documento_identidad=11111, nombre_completo='nom1', tipo_usuario_id = '1')
+        self.usuario_duenio = Usuario(documento_identidad=22222, nombre_completo='nom2', tipo_usuario_id = '2')
+        self.usuario_mecanico2 = Usuario(documento_identidad=33333, nombre_completo='nom3', tipo_usuario_id = '1')
+        self.vehiculo = Vehiculo(placa='qaz123', marca = 'renault', modelo = 2020, tipo_vehiculo = '1', duenio = None, mecanico = None)
         
     def test_asignar_mecanico(self):
         self.usuario_mecanico.almacenar()
