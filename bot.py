@@ -89,7 +89,7 @@ def proceso_placa(message):
         response = bot.reply_to(message, '¿Cuál es la marca del vehículo?')
         bot.register_next_step_handler(response, proceso_marca)
     else:
-        response = bot.reply_to(message, "La placa debe tener 6 caracteres y debe ser un dato alfanumerico, ¿Cuál es la placa del vehículo?")
+        response = bot.reply_to(message, "La placa debe tener 6 caracteres y debe ser un dato alfanumerico de la forma AAA000, ¿Cuál es la placa del vehículo?")
         bot.register_next_step_handler(response, proceso_placa)
     
 #########################################################
@@ -123,19 +123,19 @@ def proceso_modelo(message):
     
     lista_tipo_vehiculos = logic.listar_tipos_vehiculos()
     
-    if modelo.isdigit():
+    if modelo.isdigit() and len(modelo)==4:
         bot.send_message(message.chat.id,
                      "Selecciona el tipo de vehículo",
                      reply_markup=makeKeyboard(lista_tipo_vehiculos, 'vehiculo'),
                      parse_mode='HTML')
         
     else:
-        response = bot.reply_to(message, 'El modelo solo debe ser un dato numérico, ¿Cuál es el modelo del vehículo')
+        response = bot.reply_to(message, 'El modelo solo debe ser un dato numérico de 4 dígitos, ¿Cuál es el modelo del vehículo')
         bot.register_next_step_handler(response, proceso_modelo)
 
 ########################################################
 
-@bot.message_handler(regexp=r"^(realizar revision|rr)$")
+@bot.message_handler(regexp=r"^(realizar revision|realizar revisión|rr)$")
 def commando_realizar_revision(message):
     bot.send_chat_action(message.chat.id, 'typing')
     sleep(1)
@@ -153,7 +153,7 @@ def proceso_nivel_aceite(message):
     
     
     if revision.nivel_aceite.isdigit():
-        response = bot.reply_to(message, "¿Cuál es el nivel de liquido de frenos del vehículo? (en mililitros mL)")
+        response = bot.reply_to(message, "¿Cuál es el nivel de líquido de frenos del vehículo? (en mililitros mL)")
         bot.register_next_step_handler(response, proceso_nivel_liquido_frenos)
         
     else:
@@ -175,7 +175,7 @@ def proceso_nivel_liquido_frenos(message):
         bot.register_next_step_handler(response, proceso_nivel_refrigerante)
         
     else:
-        response = bot.reply_to(message, 'El nivel de liquido de frenos debe ser un dato numérico, ¿Cuál es el nivel de liquido de frenos del vehículo? (en mililitros mL)')
+        response = bot.reply_to(message, 'El nivel de líquido de frenos debe ser un dato numérico, ¿Cuál es el nivel de líquido de frenos del vehículo? (en mililitros mL)')
         bot.register_next_step_handler(response, proceso_nivel_liquido_frenos)
 
 ########################################################
@@ -188,7 +188,7 @@ def proceso_nivel_refrigerante(message):
     
     
     if revision.nivel_refrigerante.isdigit():
-        response = bot.reply_to(message, "¿Cuál es el nivel de liquido de dirección del vehículo? (en mililitros mL)")
+        response = bot.reply_to(message, "¿Cuál es el nivel de líquido de dirección del vehículo? (en mililitros mL)")
         bot.register_next_step_handler(response, proceso_nivel_liquido_direccion)
         
     else:
@@ -213,7 +213,7 @@ def proceso_nivel_liquido_direccion(message):
                      parse_mode='HTML')
         
     else:
-        response = bot.reply_to(message, 'El nivel de liquido de dirección debe ser un dato numérico, ¿Cuál es el nivel de liquido de dirección del vehículo? (en mililitros mL)')
+        response = bot.reply_to(message, 'El nivel de líquido de dirección debe ser un dato numérico, ¿Cuál es el nivel de liquido de dirección del vehículo? (en mililitros mL)')
         bot.register_next_step_handler(response, proceso_nivel_liquido_direccion)
 
 ########################################################
