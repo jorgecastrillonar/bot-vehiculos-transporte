@@ -13,7 +13,6 @@ class Vehiculo(db.Base):
     duenio_id = Column('duenio_id', String(15), ForeignKey('tipo_usuario.id',onupdate='CASCADE', ondelete='CASCADE'), nullable=True)
     mecanico_id = Column('mecanico_id', String(15), ForeignKey('tipo_usuario.id',onupdate='CASCADE', ondelete='CASCADE'), nullable=True)
 
-    vehiculos = relationship('VehiculoRevision', back_populates='vr_vehiculo')
     tipo_vehiculo = relationship('TipoVehiculo', back_populates='vehiculos')
     
     def __init__(self, placa="", marca = "", modelo = 0, tipo_vehiculo = 1, duenio = None, mecanico = None):

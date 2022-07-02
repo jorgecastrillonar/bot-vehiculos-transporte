@@ -114,6 +114,32 @@ Obtiene los tipos de usuario registrados en la base de datos
 def obtener_tipo_usuario():
     tipo_usuario = db.session.query(TipoUsuario).all()
     return tipo_usuario
+#################################################################################
+'''
+Obtiene los usuarios registrados en la base de datos
+@return usuarios Los registros Usuario encontrados.
+'''
+def obtener_usuarios():
+    usuarios = db.session.query(Usuario).all()
+    return usuarios
+#################################################################################
+'''
+Obtiene los vehiculos registrados en la base de datos
+@return vehiculos Los registros Vehiculo encontrados.
+'''
+def obtener_vehiculos():
+    vehiculos = db.session.query(Vehiculo).all()
+    return vehiculos
+#################################################################################
+'''
+Obtiene las revisiones registradas en la base de datos
+@return revisiones Los registros Revisiones encontrados.
+'''
+""" def obtener_revisiones():
+    revisiones = db.session.query(Revision).all()
+    return revisiones """
+
+
 
 
 def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):

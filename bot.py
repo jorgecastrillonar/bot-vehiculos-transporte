@@ -12,7 +12,8 @@ from telebot import types
 import ast
 from models.Usuario import Usuario
 from models.TipoUsuario import TipoUsuario
-
+import prettytable as pt
+from markdownTable import markdownTable
 vehiculo = Vehiculo()
 
 user = Usuario()
@@ -25,7 +26,7 @@ if __name__ == '__main__':
 @bot.message_handler(commands=['start'])
 def on_command_help(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    emojiExito = emojis_exito() + ' ' + emojis_excepcion()
+    emojiExito = decorators.emojis_exito() + ' ' + decorators.emojis_excepcion()
     bot.send_message(
 		message.chat.id, 
 		emojiExito, 
@@ -250,16 +251,64 @@ def on_asignar_mecanico(message):
     
     bot.reply_to(message, text, parse_mode="Markdown")
     
-
-
 ###########################################################################################
 """
 Metodo que permite listar todos los registros de la tabla revision
 """
-@bot.message_handler(regexp=r"^(Listar niveles|listar niveles|Ver niveles|ver niveles|vn)$")
-def listar_niveles():
-    pass
+@bot.message_handler(regexp=r"^(Listar usuarios|listar usuarios|Ver usuarios|ver usuarios|ltu)$")
+def listar_usuarios(message):
+    data = logic.obtener_usuarios()
+    table = pt.PrettyTable(['Documento', 'Nombre', 'Tipo'])
+    table.align['Documento'] = 'l'
+    table.align['Nombre'] = 'l'
+    table.align['Tipo'] = 'l'
 
+    for item in data:
+        table.add_row([item.documento_identidad, f'{item.nombre_completo}', f'{item.tipo_usuario.nombre}'])
+    bot.reply_to(message, f'<pre>{table}</pre>', parse_mode="HTML")
+    
+    """ markdownTable(table).setParams(row_sep = 'topbottom'
+                                  , padding_width = 5, padding_weight='left').getMarkdown() """
+###########################################################################################
+"""
+Metodo que permite listar todos los registros de la tabla revision
+"""
+@bot.message_handler(regexp=r"^(Listar vehiculos|listar vehiculos|Ver vehiculos|ver vehiculos|ltv)$")
+def listar_vehiculos(message):
+    data = logic.obtener_vehiculos()
+    table = pt.PrettyTable(['Placa', 'Marca', 'Modelo','Tipo'])
+    table.align['Placa'] = 'l'
+    table.align['Marca'] = 'l'
+    table.align['Modelo'] = 'l'
+    table.align['Tipo'] = 'l'
+
+    for item in data:
+        table.add_row([item.placa, f'{item.marca}', f'{item.modelo}',f'{item.tipo_vehiculo.nombre}'])
+    bot.reply_to(message, f'<pre>{table}</pre>', parse_mode="HTML")
+    
+    """ markdownTable(table).setParams(row_sep = 'topbottom'
+                                  , padding_width = 5, padding_weight='left').getMarkdown() """
+###########################################################################################
+"""
+Metodo que permite listar todos los registros de la tabla revision
+"""
+@bot.message_handler(regexp=r"^(Listar revisiones|listar revisiones|Ver revisiones|ver revisiones|ltr)$")
+def listar_revisiones(message):
+    #data = logic.obtrener_revisiones()
+    table = pt.PrettyTable(['Nivel 1', 'Nivel 2', 'Nivel 3','Nivel 4'])
+    table.align['Nivel 1'] = 'l'
+    table.align['Nivel 2'] = 'l'
+    table.align['Nivel 3'] = 'l'
+    table.align['Nivel 4'] = 'l'
+
+    """ for item in data:
+        table.add_row([item.nivel_1, f'{item.nivel_2}', f'{item.nivel_3}',f'{item.nivel_4}'])
+    """
+    bot.reply_to(message, f'<pre>{table}</pre>', parse_mode="HTML") 
+    
+    """ markdownTable(table).setParams(row_sep = 'topbottom'
+                                  , padding_width = 5, padding_weight='left').getMarkdown() """
+    
 #########################################################
 
 @bot.message_handler(func=lambda message: True)
