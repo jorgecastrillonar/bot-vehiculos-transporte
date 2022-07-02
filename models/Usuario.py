@@ -21,12 +21,6 @@ class Usuario(db.Base):
 
     def __repr__(self):
         return f"<Usuario {self.id}>"
-
-    def almacenar(self):
-       db.Base.metadata.create_all(db.engine)
-       session = db.Session()
-       session.add(self)
-       session.commit()
        
     def eliminar(self):
        db.Base.metadata.create_all(db.engine)
