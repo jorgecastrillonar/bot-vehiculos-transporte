@@ -403,12 +403,12 @@ Metodo que permite listar todos los registros de la tabla revision
 """
 @bot.message_handler(regexp=r"^(Listar revisiones|listar revisiones|Ver revisiones|ver revisiones|ltr)$")
 def listar_revisiones(message):
-    data = logic.obtrener_revisiones()
-    table = pt.PrettyTable(['Nivel Aceite', 'Nivel Frenos', 'Nivel Refrigerante','Nivel Direccion'])
-    table.align['Nivel Aceite'] = 'l'
-    table.align['Nivel Frenos'] = 'l'
-    table.align['Nivel Refrigerante'] = 'l'
-    table.align['Nivel Direccion'] = 'l'
+    data = logic.obtener_revisiones()
+    table = pt.PrettyTable(['Aceite', 'Frenos', 'Refrigerante','Direccion'])
+    table.align['Aceite'] = 'l'
+    table.align['Frenos'] = 'l'
+    table.align['Refrigerante'] = 'l'
+    table.align['Direccion'] = 'l'
 
     for item in data:
         table.add_row([item.nivel_aceite, f'{item.nivel_liquido_frenos}', f'{item.nivel_refrigerante}',f'{item.nivel_liquido_direccion}'])
