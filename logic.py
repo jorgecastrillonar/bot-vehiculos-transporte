@@ -2,9 +2,11 @@ from pydoc import doc
 import database.db as db
 from datetime import datetime
 from sqlalchemy import extract
+from models.Revision import Revision
 from models.TipoVehiculo import TipoVehiculo
 import re
 from models.Vehiculo import Vehiculo
+from models.VehiculoRevision import VehiculoRevision
 
 #########################################################
 
@@ -16,27 +18,37 @@ Almacenar un vehículo en la base de datos
 @param Integer tipo de vehículo a registrar
 @return Vehiculo | None Objeto de tipo Vehiculo registrado o None si no es posible regoistrarlo
 '''
-def registrar_vehiculo(placa, marca="",modelo=0, tipo_vehiculo=1):
+def registrar_vehiculo(placa, marca="",modelo=0, tipo_vehiculo_id=1):
     
     vehiculo = obtener_vehiculo(placa)
     
     if vehiculo is None:
-        vehiculo = Vehiculo(placa,marca,modelo,tipo_vehiculo)
+        vehiculo = Vehiculo(placa,marca,modelo,tipo_vehiculo_id)
         db.session.add(vehiculo)
         db.session.commit()
         return vehiculo
     else:
         return None
+
+#########################################################
+
+def registrar_revision(revision):
     
-    """ if len(placa) != 6:
-        print("Debe tener 6 caracteres") """
-        
-    """ if not modelo.isdigit():
-        print("El modelo debe ser un valor numerico") """
-        
-    """ if not placa.isalnum():
-        print("La placa solo debe contener valores alfanumericos") """    
-            
+    db.session.add(revision)
+    db.session.commit()
+    return revision
+
+#########################################################
+
+def registrar_revision_vehiculo(revision_id, placa):
+    
+    vehiculo = obtener_vehiculo(placa)
+    
+    vehiculo_revision = VehiculoRevision(vehiculo.id,revision_id)
+    db.session.add(vehiculo_revision)
+    db.session.commit()
+    return vehiculo_revision
+
 #########################################################
 
 '''
@@ -48,6 +60,19 @@ def listar_tipos_vehiculos():
     return tipos_vehiculos
 
 #########################################################
+
+#########################################################
+
+'''
+Obtiene los tipos de vehiculos registrados
+@return tipos_vehiculos Lista de los tipo de vehiculos
+'''
+def listar_vehiculos():
+    vehiculos = db.session.query(Vehiculo).all()
+    return vehiculos
+
+#########################################################
+
 
 '''
 Obtiene un vehiculo filtrado por la placa
@@ -135,36 +160,22 @@ def obtener_vehiculos():
 Obtiene las revisiones registradas en la base de datos
 @return revisiones Los registros Revisiones encontrados.
 '''
-""" def obtener_revisiones():
+def obtener_revisiones():
     revisiones = db.session.query(Revision).all()
-    return revisiones """
+    return revisiones
 
 
 
 
 def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):
     
-    vehiculo = db.session.query(
-        Vehiculo
-    ).filter_by(
-        placa = placa_vehiculo
-    ).one_or_none()
+    vehiculo = obtener_vehiculo(placa_vehiculo)
     
-    usuario = db.session.query(
-        Usuario
-    ).filter_by(
-        documento_identidad = documento_identidad_usuario
-    ).one_or_none()
+    usuario = obtener_usuario_documento(documento_identidad_usuario)
     
     db.session.commit()
     
-    if not vehiculo:
-        return 'Error al asignar mecánico'
-    
-    if not usuario:
-        return 'Error al asignar mecánico'
-    
-    if usuario.tipo_usuario_id != '1':
+    if not es_valida_asignacion(vehiculo, usuario, '1'):
         return 'Error al asignar mecánico'
     
     if vehiculo.mecanico_id != None and vehiculo.mecanico_id != usuario.id:
@@ -174,3 +185,28 @@ def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):
     db.session.commit()        
         
     return 'Mecánico asignado correctamente'
+
+def asignar_duenio (documento_identidad_usuario, placa_vehiculo):
+    
+    vehiculo = obtener_vehiculo(placa_vehiculo)
+    
+    usuario = obtener_usuario_documento(documento_identidad_usuario)
+    
+    db.session.commit()
+    
+    if not es_valida_asignacion(vehiculo, usuario, '2'):
+        return 'Error al asignar dueño'
+    
+    if vehiculo.duenio_id != None and vehiculo.duenio_id != usuario.id:
+        return 'El vehículo ya tiene un dueño asignado previamente'
+    
+    vehiculo.duenio_id = usuario.id
+    db.session.commit()        
+        
+    return 'Dueño asignado correctamente'
+
+def es_valida_asignacion(vehiculo, usuario, tipo_usuario_id):
+    if not vehiculo or not usuario or usuario.tipo_usuario_id != tipo_usuario_id:
+        return False
+    
+    return True

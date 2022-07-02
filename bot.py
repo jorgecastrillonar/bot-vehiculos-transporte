@@ -6,6 +6,7 @@ import re
 import logic
 import decorators
 import database.db as db
+from models.Revision import Revision
 from models.Vehiculo import Vehiculo
 from models.TipoVehiculo import TipoVehiculo
 from telebot import types
@@ -14,7 +15,10 @@ from models.Usuario import Usuario
 from models.TipoUsuario import TipoUsuario
 import prettytable as pt
 from markdownTable import markdownTable
+from models.VehiculoRevision import VehiculoRevision
+
 vehiculo = Vehiculo()
+revision = Revision()
 
 user = Usuario()
 
@@ -32,6 +36,8 @@ def on_command_help(message):
 		emojiExito, 
 		parse_mode="Markdown") 
 
+##############################################################################
+
 '''
 Contruir teclado en pantalla
 @return datos_listar Lista de elementos a mostrar
@@ -46,6 +52,19 @@ def makeKeyboard(datos_listar, tipo):
 
 #########################################################
  
+'''
+Contruir teclado en pantalla
+@return datos_listar Lista de elementos a mostrar
+'''
+def makeKeyboardVehiculos(vehiculos):
+    markup = types.InlineKeyboardMarkup()
+
+    for item in vehiculos:
+        markup.add(types.InlineKeyboardButton(text=item.placa,callback_data="['lista_vehiculos', '" + str(item.placa) + "']"))
+
+    return markup
+
+#########################################################
 
 """
 Recibe la petición para registrar un nuevo vehículo
@@ -72,7 +91,7 @@ def proceso_placa(message):
         response = bot.reply_to(message, '¿Cuál es la marca del vehículo?')
         bot.register_next_step_handler(response, proceso_marca)
     else:
-        response = bot.reply_to(message, "La placa debe tener 6 caracteres y debe ser un dato alfanumerico, ¿Cuál es la placa del vehículo?")
+        response = bot.reply_to(message, "La placa debe tener 6 caracteres y debe ser un dato alfanumerico de la forma AAA000, ¿Cuál es la placa del vehículo?")
         bot.register_next_step_handler(response, proceso_placa)
     
 #########################################################
@@ -106,20 +125,100 @@ def proceso_modelo(message):
     
     lista_tipo_vehiculos = logic.listar_tipos_vehiculos()
     
-    if modelo.isdigit():
+    if modelo.isdigit() and len(modelo)==4:
         bot.send_message(message.chat.id,
                      "Selecciona el tipo de vehículo",
                      reply_markup=makeKeyboard(lista_tipo_vehiculos, 'vehiculo'),
                      parse_mode='HTML')
         
     else:
-        response = bot.reply_to(message, 'El modelo solo debe ser un dato numérico, ¿Cuál es el modelo del vehículo')
+        response = bot.reply_to(message, 'El modelo solo debe ser un dato numérico de 4 dígitos, ¿Cuál es el modelo del vehículo')
         bot.register_next_step_handler(response, proceso_modelo)
 
-    
-    
 ########################################################
 
+@bot.message_handler(regexp=r"^(realizar revision|realizar revisión|rr)$")
+def commando_realizar_revision(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    
+    response = bot.reply_to(message, "¿Cuál es el nivel de aceite del vehículo? (en mililitros mL)")
+    bot.register_next_step_handler(response, proceso_nivel_aceite)
+
+########################################################
+
+def proceso_nivel_aceite(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    
+    revision.nivel_aceite = message.text
+    
+    
+    if revision.nivel_aceite.isdigit():
+        response = bot.reply_to(message, "¿Cuál es el nivel de líquido de frenos del vehículo? (en mililitros mL)")
+        bot.register_next_step_handler(response, proceso_nivel_liquido_frenos)
+        
+    else:
+        response = bot.reply_to(message, 'El nivel de aceite debe ser un dato numérico, ¿Cuál es el nivel de aceite del vehículo? (en mililitros mL)')
+        bot.register_next_step_handler(response, proceso_nivel_aceite)
+
+
+########################################################
+
+def proceso_nivel_liquido_frenos(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    
+    revision.nivel_liquido_frenos = message.text
+    
+    
+    if revision.nivel_liquido_frenos.isdigit():
+        response = bot.reply_to(message, "¿Cuál es el nivel de refrigerante del vehículo? (en mililitros mL)")
+        bot.register_next_step_handler(response, proceso_nivel_refrigerante)
+        
+    else:
+        response = bot.reply_to(message, 'El nivel de líquido de frenos debe ser un dato numérico, ¿Cuál es el nivel de líquido de frenos del vehículo? (en mililitros mL)')
+        bot.register_next_step_handler(response, proceso_nivel_liquido_frenos)
+
+########################################################
+
+def proceso_nivel_refrigerante(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    
+    revision.nivel_refrigerante = message.text
+    
+    
+    if revision.nivel_refrigerante.isdigit():
+        response = bot.reply_to(message, "¿Cuál es el nivel de líquido de dirección del vehículo? (en mililitros mL)")
+        bot.register_next_step_handler(response, proceso_nivel_liquido_direccion)
+        
+    else:
+        response = bot.reply_to(message, 'El nivel de refrigerante debe ser un dato numérico, ¿Cuál es el nivel de refrigerante del vehículo? (en mililitros mL)')
+        bot.register_next_step_handler(response, proceso_nivel_refrigerante)
+
+########################################################
+
+def proceso_nivel_liquido_direccion(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    
+    revision.nivel_liquido_direccion = message.text
+    
+    
+    if revision.nivel_liquido_direccion.isdigit():
+        vehiculos = logic.listar_vehiculos()
+    
+        bot.send_message(message.chat.id,
+                     "Seleccione el vehículo para realizar la revisión",
+                     reply_markup=makeKeyboardVehiculos(vehiculos),
+                     parse_mode='HTML')
+        
+    else:
+        response = bot.reply_to(message, 'El nivel de líquido de dirección debe ser un dato numérico, ¿Cuál es el nivel de liquido de dirección del vehículo? (en mililitros mL)')
+        bot.register_next_step_handler(response, proceso_nivel_liquido_direccion)
+
+########################################################
 
 """
 Encargado de recibir la petición de registrar un nuevo usuario.
@@ -211,9 +310,10 @@ Metodo encargado de recibir la respuesta del teclado en pantalla y procesarla.
 """
 @bot.callback_query_handler(func=lambda message: message)
 def handle_query(message):
+    dato_seleccionado = ast.literal_eval(message.data)[1]
     if (message.data.startswith("['usuario'")):
-        user.tipo_usuario_id = ast.literal_eval(message.data)[1]
-        usuario = logic.crear_nuevo_usuario(user.documento_identidad,user.nombre_completo,user.tipo_usuario_id)
+
+        usuario = logic.crear_nuevo_usuario(user.documento_identidad,user.nombre_completo, dato_seleccionado)
         
         bot.reply_to(
             message.message,
@@ -223,16 +323,25 @@ def handle_query(message):
             +' \r\nTipo de Usuario: '+str(usuario.tipo_usuario.nombre) if usuario is not None
             else f'El usuario ya se encuentra registrado.'
             +decorators.emojis_excepcion()+decorators.emojis_excepcion()) 
-    else:
         
-        id_tipo_vehiculo = ast.literal_eval(message.data)[1]
-        vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,id_tipo_vehiculo)
+    if (message.data.startswith("['vehiculo'")):
+        vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,dato_seleccionado)
+        
+        bot.reply_to(
+            message.message,
+            f"\U0001F697 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
+            else f"El vehículo ya se encuentra registrado.")
+    
+    if (message.data.startswith("['lista_vehiculos'")):
+        nueva_revision = logic.registrar_revision(revision)
+        
+        registrar_revision = logic.registrar_revision_vehiculo(nueva_revision.id,dato_seleccionado)
     
         bot.reply_to(
             message.message,
-            f"\U0001F4B0 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
-            else f"El vehículo ya se encuentra registrado.") 
-
+            f"\U00002705 Se registró una revisión al vehículo con placas: {dato_seleccionado}" if registrar_revision is not None
+            else f"No fue posible registrar la revisión, intenta de nuevo.") 
+     
 ###########################################################################################
 
 @bot.message_handler(regexp=r"^(Asignar mecánico|Asignar mecanico|am) ([0-9]+) a ([A-Za-z0-9]+)$")
@@ -294,22 +403,41 @@ Metodo que permite listar todos los registros de la tabla revision
 """
 @bot.message_handler(regexp=r"^(Listar revisiones|listar revisiones|Ver revisiones|ver revisiones|ltr)$")
 def listar_revisiones(message):
-    #data = logic.obtrener_revisiones()
-    table = pt.PrettyTable(['Nivel 1', 'Nivel 2', 'Nivel 3','Nivel 4'])
-    table.align['Nivel 1'] = 'l'
-    table.align['Nivel 2'] = 'l'
-    table.align['Nivel 3'] = 'l'
-    table.align['Nivel 4'] = 'l'
+    data = logic.obtrener_revisiones()
+    table = pt.PrettyTable(['Nivel Aceite', 'Nivel Frenos', 'Nivel Refrigerante','Nivel Direccion'])
+    table.align['Nivel Aceite'] = 'l'
+    table.align['Nivel Frenos'] = 'l'
+    table.align['Nivel Refrigerante'] = 'l'
+    table.align['Nivel Direccion'] = 'l'
 
-    """ for item in data:
-        table.add_row([item.nivel_1, f'{item.nivel_2}', f'{item.nivel_3}',f'{item.nivel_4}'])
-    """
+    for item in data:
+        table.add_row([item.nivel_aceite, f'{item.nivel_liquido_frenos}', f'{item.nivel_refrigerante}',f'{item.nivel_liquido_direccion}'])
+    
     bot.reply_to(message, f'<pre>{table}</pre>', parse_mode="HTML") 
     
     """ markdownTable(table).setParams(row_sep = 'topbottom'
                                   , padding_width = 5, padding_weight='left').getMarkdown() """
     
 #########################################################
+
+@bot.message_handler(regexp=r"^(Asignar dueño|asignar dueño|ad) ([0-9]+) a ([A-Za-z0-9]+)$")
+def on_asignar_duenio(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    parts = re.match(
+        r"^(Asignar dueño|asignar dueño|ad) ([0-9]+) a ([A-Za-z0-9]+)$",
+        message.text,
+        flags=re.IGNORECASE)
+    
+    documento_identidad_usuario = int(parts[2])
+    placa_vehiculo = parts[3]
+    
+    text = logic.asignar_duenio (documento_identidad_usuario, placa_vehiculo)
+    
+    bot.reply_to(message, text, parse_mode="Markdown")
+    
+    
+###########################################################################################
 
 @bot.message_handler(func=lambda message: True)
 def on_fallback(message):
