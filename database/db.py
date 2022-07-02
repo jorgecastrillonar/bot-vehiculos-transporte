@@ -12,3 +12,8 @@ Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
 session = Session()
+
+
+""" 
+INSERT INTO tipo_usuario (nombre, descripcion) VALUES ('Dueño', 'Dato que representa al usuario de tipo dueño');
+INSERT INTO tipo_usuario (nombre, descripcion) VALUES ('Mecanico', 'Dato que representa al usuario de tipo mecanico'); """
