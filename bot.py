@@ -1,10 +1,7 @@
-#########################################################
-
-from ast import Import
-from statistics import mode
 ##############################################################################
 from config import bot
 from time import sleep
+from statistics import mode
 import re
 import logic
 import decorators
@@ -12,15 +9,13 @@ import database.db as db
 from models.Vehiculo import Vehiculo
 from models.TipoVehiculo import TipoVehiculo
 from telebot import types
-
-
-vehiculo = Vehiculo()
 import ast
-from telebot import types
 from models.Usuario import Usuario
 from models.TipoUsuario import TipoUsuario
 
-#user = Usuario()
+vehiculo = Vehiculo()
+
+user = Usuario()
 
 prueba = {'id': '','documento': ''}
 ##############################################################################
@@ -30,7 +25,7 @@ if __name__ == '__main__':
 @bot.message_handler(commands=['start'])
 def on_command_help(message):
     bot.send_chat_action(message.chat.id, 'typing')
-    emojiExito = decorators.emojis_exito()
+    emojiExito = emojis_exito() + ' ' + emojis_excepcion()
     bot.send_message(
 		message.chat.id, 
 		emojiExito, 
@@ -40,27 +35,16 @@ def on_command_help(message):
 Contruir teclado en pantalla
 @return datos_listar Lista de elementos a mostrar
 '''
-def makeKeyboard(datos_listar):
+def makeKeyboard(datos_listar, tipo):
     markup = types.InlineKeyboardMarkup()
 
     for item in datos_listar:
-        markup.add(types.InlineKeyboardButton(text=item.nombre,callback_data=item.id))
+        markup.add(types.InlineKeyboardButton(text=item.nombre,callback_data="['"+ tipo +"', '" + str(item.id) + "']"))
 
     return markup
 
 #########################################################
-
-@bot.callback_query_handler(func=lambda call: True)
-def handle_query(call):
-    print(call.data)
-    vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,call.data)
-    
-    bot.reply_to(
-        call.message,
-        f"\U0001F4B0 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
-        else f"El vehículo ya se encuentra registrado.") 
-    
-#########################################################      
+ 
 
 """
 Recibe la petición para registrar un nuevo vehículo
@@ -124,7 +108,7 @@ def proceso_modelo(message):
     if modelo.isdigit():
         bot.send_message(message.chat.id,
                      "Selecciona el tipo de vehículo",
-                     reply_markup=makeKeyboard(lista_tipo_vehiculos),
+                     reply_markup=makeKeyboard(lista_tipo_vehiculos, 'vehiculo'),
                      parse_mode='HTML')
         
     else:
@@ -135,12 +119,6 @@ def proceso_modelo(message):
     
 ########################################################
 
-@bot.message_handler(func=lambda message: True)
-def on_fallback(message):
-    bot.send_chat_action(message.chat.id, 'typing')
-    sleep(1)
-
-    bot.reply_to(message, "no entiendo")
 
 """
 Encargado de recibir la petición de registrar un nuevo usuario.
@@ -160,22 +138,19 @@ def registrar_nuevo_usuario(message, flag=False):
     
     bot.send_chat_action(message.chat.id, 'typing')
     sleep(1)
-    
-    text = '¿Cuál es el número de documento del usuario?'
-    bot.send_message(
-		message.chat.id, 
-		text, 
-		parse_mode="Markdown") 
+    text = '¿Cuál es el número de documento del usuario?'+decorators.emojis_pregunta()
+    response = bot.reply_to(message, text)
+    bot.register_next_step_handler(response, paso_documento)
+ 
 ##############################################################################
 """
 Metodo que recibe la respuesta para almacenar al usuario
 """
-@bot.message_handler(func=lambda message: message.reply_to_message != None and message.reply_to_message.text == "¿Cuál es el número de documento del usuario?")
-def registrar_documento(message, flag=False):
+def paso_documento(message, flag=False):
+    
     if flag == False:
-        parts = re.match(
-            r"(?:^|[^\-\d])(\d+){1,10}", 
-            message.text)
+        parts = re.match(r'\s*\d+(?:\s+\d+)*\s*$'
+                 ,message.text)
     else:
         parts = 1
 
@@ -183,95 +158,117 @@ def registrar_documento(message, flag=False):
     sleep(1)
     
     if parts == None:
-        text = 'Lo siento no puedo recibir datos diferentes a numeros. \r\nRepitamos el proceso.'
+        text = 'Lo siento no puedo recibir datos diferentes a numeros.'+decorators.emojis_excepcion()+'\r\nRepitamos el proceso.'
         bot.send_message(message.chat.id, text, parse_mode="Markdown")
         registrar_nuevo_usuario(message, flag=True)      
     else:
         usuario = logic.obtener_usuario_documento(message.text)
         if usuario is None:
-            
-            logic.crear_nuevo_usuario(message.text)
-            ############### REFACTOR: CAMBIAR DE GLOBAL A INSTANCIA
-            #user.documento_identidad = message.text
-            ############### REFACTOR: CAMBIAR DE GLOBAL A INSTANCIA
-            globales = globals()
-            globales['prueba'] = {'id': message.from_user.id, 'documento': message.text}
-            
-            text = 'Y ¿Como se llama el usuario?'
-            bot.send_message(message.chat.id, text, parse_mode="Markdown")  
+            user.documento_identidad = message.text
+            text = 'Y ¿Como se llama el usuario?'+decorators.emojis_pregunta()
+            response = bot.reply_to(message, text)
+            bot.register_next_step_handler(response, paso_tipo_usuario)
         else:
-            text = 'El usuario ya existe en el sistema \r\ndeseas actualizar los datos? (Si | No): '
-            bot.send_message(message.chat.id, text, parse_mode="Markdown")
+            text = 'El usuario ya existe en el sistema \r\ndeseas actualizar los datos?'+decorators.emojis_pregunta()+'(Si | No): '
+            response = bot.reply_to(message, text)
+            #bot.register_next_step_handler(response, registrar_documento)   
             
 ##############################################################################        
 """
 Metodo que actualiza el nombre del usuario 
 y lanza el teclado en pantalla
 """
-@bot.message_handler(func=lambda message: message.reply_to_message != None and message.reply_to_message.text == "Y ¿Como se llama el usuario?")
-def registro_tipo_usuario(message):       
+def paso_tipo_usuario(message):       
     parts = re.match(
 		r"[a-zA-ZÀ-ÖØ-öø-ÿ-zäÄëËïÏöÖüÜáéíóúáéíóúÁÉÍÓÚÂÊÎÔÛâêîôûàèìòùÀÈÌÒÙñÑ]+\.?(( |\-)[a-zA-ZÀ-ÖØ-öø-ÿ]+\.?)*", 
 		message.text)
     
-    globales = globals()
-    ############### REFACTOR: CAMBIAR DE GLOBAL A INSTANCIA
-    if globales['prueba']['id'] != message.from_user.id:
-        pass
+    if parts == None:
+        text = 'Lo siento no puedo recibir datos diferentes a letras.'+decorators.emojis_fallo() 
+        +'\r\n \r\nRepitamos el proceso.'
+        response = bot.reply_to(message, text)
+        bot.register_next_step_handler(response, paso_documento(message,True))
     else:
-        if parts == None:
-            text = 'Lo siento no puedo recibir datos diferentes a letras.'+ decorators.emojis_excepcion 
-            +'\r\n \r\nRepitamos el proceso.'
-            bot.send_message(message.chat.id, text, parse_mode="Markdown")
-            registrar_documento(message, flag=True)    
-        else:
-            usuario = logic.obtener_usuario_documento(globales['prueba']['documento'])
-            datos = {'nombre_completo': message.text}
-            logic.actualizar_datos_modelo(usuario, datos)
-            
-            ##REFACTOR EXTRACT##
-            bot.send_chat_action(message.chat.id, 'typing')
-            sleep(1)        
-            text = 'Selecciona el tipo de usuario'
-            bot.send_message(message.chat.id,
-                            text,
-                            reply_markup=makeKeyboard(),
-                            parse_mode='HTML')
+        user.nombre_completo = message.text
+        objectTipoUsuario = logic.obtener_tipo_usuario()   
+        lanzar_teclado(message, objectTipoUsuario)    
+############################################################################################
+"""
+Metodo que permite lanzar el teclado de seleccion de tipos.
+"""
+def lanzar_teclado(message, objeto):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)        
+    text = 'Selecciona el tipo de usuario'
+    bot.send_message(message.chat.id,
+                    text,
+                    reply_markup=makeKeyboard(objeto,'usuario'),
+                    parse_mode='HTML')
 ############################################################################################
 """
 Metodo encargado de recibir la respuesta del teclado en pantalla y procesarla.
 """
 @bot.callback_query_handler(func=lambda message: message)
 def handle_query(message):
-    if (message.data.startswith("['value'")):
-        print(f"message.data : {message.data} , type : {type(message.data)}")
-        print(f"ast.literal_eval(message.data) : {ast.literal_eval(message.data)} , type : {type(ast.literal_eval(message.data))}")
-        globales = globals()
-        keyFromCallBack = ast.literal_eval(message.data)[2]
-        usuario = logic.obtener_usuario_documento(globales['prueba']['documento'])
-        datos = {'tipo_usuario_id': keyFromCallBack}
-        logic.actualizar_datos_modelo(usuario, datos)
-        ############### REFACTOR: CAMBIAR DE GLOBAL A INSTANCIA
-        globales = globals()
-        text = 'Felicidades, terminaste el registro. '+decorators.emojis_exito()
-        bot.send_message(
-            globales['prueba']['id'],
-            text,
-            parse_mode='Markdown'
-        )
+    if (message.data.startswith("['usuario'")):
+        user.tipo_usuario_id = ast.literal_eval(message.data)[1]
+        usuario = logic.crear_nuevo_usuario(user.documento_identidad,user.nombre_completo,user.tipo_usuario_id)
+        
+        bot.reply_to(
+            message.message,
+            f''+decorators.emojis_exito()+decorators.emojis_exito()
+            +' Se registró al usuario con \r\nDocumento: '+str(usuario.documento_identidad)
+            +' \r\nMarca: '+ str(usuario.nombre_completo)         
+            +' \r\nTipo de Usuario: '+str(usuario.tipo_usuario.nombre) if usuario is not None
+            else f'El usuario ya se encuentra registrado.'
+            +decorators.emojis_excepcion()+decorators.emojis_excepcion()) 
+    else:
+        
+        id_tipo_vehiculo = ast.literal_eval(message.data)[1]
+        vehiculo_nuevo = logic.registrar_vehiculo(vehiculo.placa,vehiculo.marca,vehiculo.modelo,id_tipo_vehiculo)
+    
+        bot.reply_to(
+            message.message,
+            f"\U0001F4B0 Se registró el vehículo con placas: {vehiculo_nuevo.placa}, marca: {vehiculo_nuevo.marca}, modelo: {vehiculo_nuevo.modelo} y tipo vehiculo: {vehiculo_nuevo.tipo_vehiculo.nombre}" if vehiculo_nuevo is not None
+            else f"El vehículo ya se encuentra registrado.") 
+
 ###########################################################################################
-""" 
-Metodo que permite generar el teclado en pantalla para la seleccion de tipo_usuario 
-@return markup Respuestaa con el teclado creado.
+
+@bot.message_handler(regexp=r"^(Asignar mecánico|Asignar mecanico|am) ([0-9]+) a ([A-Za-z0-9]+)$")
+def on_asignar_mecanico(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    parts = re.match(
+        r"^(Asignar mecánico|Asignar mecanico|am) ([0-9]+) a ([A-Za-z0-9]+)$",
+        message.text,
+        flags=re.IGNORECASE)
+    
+    documento_identidad_usuario = int(parts[2])
+    placa_vehiculo = parts[3]
+    
+    text = logic.asignar_mecanico (documento_identidad_usuario, placa_vehiculo)
+    
+    bot.reply_to(message, text, parse_mode="Markdown")
+    
+
+
+###########################################################################################
 """
-def makeKeyboard():
-    markup = types.InlineKeyboardMarkup()
-    objectTipoUsuario = logic.obtener_tipo_usuario()
-    for t in objectTipoUsuario:
-        markup.add(types
-        .InlineKeyboardButton(text=t.nombre,
-        callback_data="['value', '" + t.nombre + "', '" + str(t.id) + "']"))    
-    return markup
+Metodo que permite listar todos los registros de la tabla revision
+"""
+@bot.message_handler(regexp=r"^(Listar niveles|listar niveles|Ver niveles|ver niveles|vn)$")
+def listar_niveles():
+    pass
+
+#########################################################
+
+@bot.message_handler(func=lambda message: True)
+def on_fallback(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    response = logic.get_fallback_message(message.text)
+    bot.reply_to(message, response)
+
 ############################################################################################
 if __name__ == '__main__':
     bot.polling(timeout=20)

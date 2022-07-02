@@ -1,5 +1,6 @@
-############################################333
-from random import random, randrange
+##############################################################################
+from random import randrange
+##############################################################################
 ##############################################################################
 """
 Metodo que genera un emoji aleatorio en formato unicode que represente un exito.
@@ -13,7 +14,8 @@ def emojis_exito():
                         {'id':4, 'emojiUC':'\U0001F44D'},
                         {'id':5, 'emojiUC':'\U0001F638'}]
     randomDigit = randrange(1,len(arrayEmojisExito))
-    return arrayEmojisExito[randomDigit]['emojiUC']
+    emoji = arrayEmojisExito[randomDigit]['emojiUC']
+    return emoji
 ##############################################################################
 """
 Metodo que genera un emoji aleatorio en formato unicode que represente un fallo.
@@ -27,7 +29,8 @@ def emojis_fallo():
                         {'id':4, 'emojiUC':'\U0001F44D'},
                         {'id':5, 'emojiUC':'\U0001F638'}]
     randomDigit = randrange(1,len(arrayEmojisFallo))
-    return arrayEmojisFallo[randomDigit]['emojiUC']
+    emoji = arrayEmojisFallo[randomDigit]['emojiUC']
+    return emoji
 ##############################################################################
 """
 Metodo que genera un emoji aleatorio en formato unicode que represente una pregunta.
@@ -41,7 +44,8 @@ def emojis_pregunta():
                         {'id':4, 'emojiUC':'\U0001F44D'},
                         {'id':5, 'emojiUC':'\U0001F638'}]
     randomDigit = randrange(1,len(arrayEmojisPregunta))
-    return arrayEmojisPregunta[randomDigit]['emojiUC']
+    emoji = arrayEmojisPregunta[randomDigit]['emojiUC']
+    return emoji
 ##############################################################################
 """
 Metodo que genera un emoji aleatorio en formato unicode que represente una excepcion.
@@ -55,4 +59,5 @@ def emojis_excepcion():
                         {'id':4, 'emojiUC':'\U0001F44D'},
                         {'id':5, 'emojiUC':'\U0001F638'}]
     randomDigit = randrange(1,len(arrayEmojisExepcion))
-    return arrayEmojisExepcion[randomDigit]['emojiUC']
+    emoji = arrayEmojisExepcion[randomDigit]['emojiUC']
+    return emoji

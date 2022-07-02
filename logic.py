@@ -66,10 +66,15 @@ from models.Usuario import Usuario
 Metodo que inicia con el registro de un usuario nuevo
 @param string documento documento de identidad del usuario
 '''
-def crear_nuevo_usuario(documento):
-    usuario = Usuario(documento_identidad=documento, nombre_completo='', tipo_usuario_id='')
-    db.session.add(usuario)
-    db.session.commit()
+def crear_nuevo_usuario(documento_identidad, nombre_completo="",tipo_usuario_id=1):
+    usuario = obtener_usuario_documento(documento_identidad)
+    if usuario is None:
+        usuario = Usuario(documento_identidad, nombre_completo, tipo_usuario_id)
+        db.session.add(usuario)
+        db.session.commit()
+        return usuario
+    else:
+        return None
 #############################################################################################################
 '''
 Metodo que actualiza un registro en la base de datos 
@@ -109,3 +114,37 @@ Obtiene los tipos de usuario registrados en la base de datos
 def obtener_tipo_usuario():
     tipo_usuario = db.session.query(TipoUsuario).all()
     return tipo_usuario
+
+
+def asignar_mecanico (documento_identidad_usuario, placa_vehiculo):
+    
+    vehiculo = db.session.query(
+        Vehiculo
+    ).filter_by(
+        placa = placa_vehiculo
+    ).one_or_none()
+    
+    usuario = db.session.query(
+        Usuario
+    ).filter_by(
+        documento_identidad = documento_identidad_usuario
+    ).one_or_none()
+    
+    db.session.commit()
+    
+    if not vehiculo:
+        return 'Error al asignar mecánico'
+    
+    if not usuario:
+        return 'Error al asignar mecánico'
+    
+    if usuario.tipo_usuario_id != '1':
+        return 'Error al asignar mecánico'
+    
+    if vehiculo.mecanico_id != None and vehiculo.mecanico_id != usuario.id:
+        return 'El vehículo ya tiene un mecánico asignado previamente'
+    
+    vehiculo.mecanico_id = usuario.id
+    db.session.commit()        
+        
+    return 'Mecánico asignado correctamente'
