@@ -14,7 +14,6 @@ import ast
 from models.Usuario import Usuario
 from models.TipoUsuario import TipoUsuario
 import prettytable as pt
-from markdownTable import markdownTable
 from models.VehiculoRevision import VehiculoRevision
 
 vehiculo = Vehiculo()
@@ -404,7 +403,7 @@ Metodo que permite listar todos los registros de la tabla revision
 @bot.message_handler(regexp=r"^(Listar revisiones|listar revisiones|Ver revisiones|ver revisiones|ltr)$")
 def listar_revisiones(message):
     data = logic.obtener_revisiones()
-    table = pt.PrettyTable(['Aceite', 'Frenos', 'Refrigerante','Direccion'])
+    table = pt.PrettyTable(['Aceite (mL)', 'Frenos (mL)', 'Refrigerante (mL)','Direccion (mL)'])
     table.align['Aceite'] = 'l'
     table.align['Frenos'] = 'l'
     table.align['Refrigerante'] = 'l'
