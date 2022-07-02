@@ -272,6 +272,35 @@ def makeKeyboard():
         .InlineKeyboardButton(text=t.nombre,
         callback_data="['value', '" + t.nombre + "', '" + str(t.id) + "']"))    
     return markup
+
+#########################################################
+
+@bot.message_handler(regexp=r"^(Asignar mecánico|Asignar mecanico|am) ([0-9]+) a ([A-Za-z0-9]+)$")
+def on_asignar_mecanico(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    parts = re.match(
+        r"^(Asignar mecánico|Asignar mecanico|am) ([0-9]+) a ([A-Za-z0-9]+)$",
+        message.text,
+        flags=re.IGNORECASE)
+    
+    documento_identidad_usuario = int(parts[2])
+    placa_vehiculo = parts[3]
+    
+    text = logic.asignar_mecanico (documento_identidad_usuario, placa_vehiculo)
+    
+    bot.reply_to(message, text, parse_mode="Markdown")
+    
+
+#########################################################
+
+@bot.message_handler(func=lambda message: True)
+def on_fallback(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    sleep(1)
+    response = logic.get_fallback_message(message.text)
+    bot.reply_to(message, response)
+
 ############################################################################################
 if __name__ == '__main__':
     bot.polling(timeout=20)

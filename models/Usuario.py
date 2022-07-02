@@ -14,12 +14,23 @@ class Usuario(db.Base):
 
     tipo_usuario = relationship('TipoUsuario', back_populates='usuarios')
     
-    def __init__(self, documento_identidad, nombre_completo, tipo_usuario_id):
+    def __init__(self, id = 0, documento_identidad=0, nombre_completo = "", tipo_usuario = ""):
+        self.id = id
         self.documento_identidad = documento_identidad
         self.nombre_completo = nombre_completo
-        self.tipo_usuario_id = tipo_usuario_id
+        self.tipo_usuario_id = tipo_usuario
 
     def __repr__(self):
         return f"<Usuario {self.id}>"
 
-    
+    def almacenar(self):
+       db.Base.metadata.create_all(db.engine)
+       session = db.Session()
+       session.add(self)
+       session.commit()
+       
+    def eliminar(self):
+       db.Base.metadata.create_all(db.engine)
+       session = db.Session()
+       session.query(Usuario).filter(Usuario.id==self.id).delete()
+       session.commit()    
