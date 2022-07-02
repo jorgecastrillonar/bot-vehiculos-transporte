@@ -15,7 +15,15 @@ class TestLogic(unittest.TestCase):
         self.usu_duenio2 = logic.crear_nuevo_usuario(documento_identidad=44444, nombre_completo='nom4', tipo_usuario_id = '2')
         self.usu_mecanico2 = logic.crear_nuevo_usuario(documento_identidad=33333, nombre_completo='nom3', tipo_usuario_id = '1')
         self.vehiculo = logic.registrar_vehiculo(placa='qaz123', marca = 'renault', modelo = 2020, tipo_vehiculo_id = '1')
-        
+    
+    @classmethod
+    def tearDownClass(self):
+        self.usu_mecanico.eliminar()
+        self.usu_duenio.eliminar()
+        self.usu_duenio2.eliminar()
+        self.usu_mecanico2.eliminar()
+        self.vehiculo.eliminar()
+    
     def test_asignar_mecanico(self):
         
         # no existe el usuario con el documento 111
@@ -52,12 +60,5 @@ class TestLogic(unittest.TestCase):
         self.assertEqual(logic.asignar_duenio(self.usu_duenio2.documento_identidad, self.vehiculo.placa) , 'El vehículo ya tiene un dueño asignado previamente')    
         
         
-    def test_eliminar_datos_prueba(self):
-        self.usu_mecanico.eliminar()
-        self.usu_duenio.eliminar()
-        self.usu_duenio2.eliminar()
-        self.usu_mecanico2.eliminar()
-        self.vehiculo.eliminar()
-        self.assertEqual(0, 0)
         
         
